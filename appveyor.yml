@@ -46,6 +46,7 @@ before_build:
 
 build_script:
   - openssl
+  - jpeg
 
 after_build:
   - clean_github

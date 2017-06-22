@@ -1,0 +1,92 @@
+diff --git a/jmorecfg.h b/jmorecfg.h
+index 679d68b..d378edb 100644
+--- a/jmorecfg.h
++++ b/jmorecfg.h
+@@ -243,9 +243,9 @@ typedef unsigned int JDIMENSION;
+ /* a function used only in its module: */
+ #define LOCAL(type)		static type
+ /* a function referenced thru EXTERNs: */
+-#define GLOBAL(type)		type
++#define GLOBAL(type)		__declspec(dllexport) type
+ /* a reference to a GLOBAL function: */
+-#define EXTERN(type)		extern type
++#define EXTERN(type)		extern __declspec(dllexport) type
+ 
+ 
+ /* This macro is used to declare a "method", that is, a function pointer.
+diff --git a/makefile.vc b/makefile.vc
+index b9b8207..9f0193f 100644
+--- a/makefile.vc
++++ b/makefile.vc
+@@ -12,13 +12,25 @@
+ !include <win32.mak>
+ 
+ # You may want to adjust these compiler options:
++!IFDEF STATIC
+ CFLAGS= $(cflags) $(cdebug) $(cvars) -I.
++!ELSE
++CFLAGS= $(cflags) $(cdebug) $(cvarsdll) -I.
++!ENDIF
++
+ # Generally, we recommend defining any configuration symbols in jconfig.h,
+ # NOT via -D switches here.
+ 
+ # Link-time options:
+ LDFLAGS= $(ldebug) $(conlflags)
+ 
++# Different OUTPUT
++!IFDEF STATIC
++BUILDCMD=  lib $(LDFLAGS) -out:libjpeg.lib $(LIBOBJECTS)
++!ELSE
++BUILDCMD= link $(LDFLAGS) -out:libjpeg.dll -dll $(LIBOBJECTS)
++!ENDIF
++
+ # To link any special libraries, add the necessary commands here.
+ LDLIBS= $(conlibs)
+ 
+@@ -105,30 +117,41 @@ TROBJECTS= jpegtran.obj rdswitch.obj cdjpeg.obj transupp.obj
+ 	$(cc) $(CFLAGS) $*.c
+ 
+ 
+-all: libjpeg.lib cjpeg.exe djpeg.exe jpegtran.exe rdjpgcom.exe wrjpgcom.exe
++all: clean libjpeg.lib cjpeg.exe djpeg.exe jpegtran.exe rdjpgcom.exe wrjpgcom.exe
+ 
+ libjpeg.lib: $(LIBOBJECTS)
+-	$(RM) libjpeg.lib
+-	lib -out:libjpeg.lib  $(LIBOBJECTS)
++	$(BUILDCMD)
++	if exist libjpeg.dll.manifest \
++		mt -manifest libjpeg.dll.manifest -outputresource:libjpeg.dll;1
+ 
+ cjpeg.exe: $(COBJECTS) libjpeg.lib
+ 	$(link) $(LDFLAGS) -out:cjpeg.exe $(COBJECTS) libjpeg.lib $(LDLIBS)
++	if exist $@.manifest \
++		mt -manifest $@.manifest -outputresource:$@;1
+ 
+ djpeg.exe: $(DOBJECTS) libjpeg.lib
+ 	$(link) $(LDFLAGS) -out:djpeg.exe $(DOBJECTS) libjpeg.lib $(LDLIBS)
++	if exist $@.manifest \
++		mt -manifest $@.manifest -outputresource:$@;1
+ 
+ jpegtran.exe: $(TROBJECTS) libjpeg.lib
+ 	$(link) $(LDFLAGS) -out:jpegtran.exe $(TROBJECTS) libjpeg.lib $(LDLIBS)
++	if exist $@.manifest \
++		mt -manifest $@.manifest -outputresource:$@;1
+ 
+ rdjpgcom.exe: rdjpgcom.obj
+ 	$(link) $(LDFLAGS) -out:rdjpgcom.exe rdjpgcom.obj $(LDLIBS)
++	if exist $@.manifest \
++		mt -manifest $@.manifest -outputresource:$@;1
+ 
+ wrjpgcom.exe: wrjpgcom.obj
+ 	$(link) $(LDFLAGS) -out:wrjpgcom.exe wrjpgcom.obj $(LDLIBS)
++	if exist $@.manifest \
++		mt -manifest $@.manifest -outputresource:$@;1
+ 
+ 
+ clean:
+-	$(RM) *.obj *.exe libjpeg.lib
++	$(RM) *.obj *.exe *.lib *.dll *.manifest
+ 	$(RM) testout*
+ 
+ setup-vc6:
