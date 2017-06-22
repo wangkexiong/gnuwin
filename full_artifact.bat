@@ -1,0 +1,8 @@
+@ECHO off
+
+FOR %%i IN (*.7z) DO (
+  CALL common :BUILD_UNPACK %%i %INSTALL_DIR%
+)
+
+CALL common :BUILD_PACK gnuwin%VCVARS_PLATFORM%.7z %INSTALL_DIR%
+
