@@ -1,0 +1,51 @@
+
+.PHONY: all
+
+{libjbig}.c{libjbig}.obj:
+	cl /c /O2 /nologo /Folibjbig\ $<
+
+{pbmtools}.c{pbmtools}.obj:
+	cl /c /O2 /nologo /Ilibjbig /Fopbmtools\ $<
+
+libjbig.dll: libjbig.def libjbig\*.obj
+	link /dll /def:libjbig.def /out:$@ /implib:libjbig.lib libjbig\jbig.obj libjbig\jbig_ar.obj
+libjbig85.dll: libjbig85.def libjbig\*.obj
+	link /dll /def:libjbig85.def /out:$@ /implib:libjbig85.lib libjbig\jbig85.obj libjbig\jbig_ar.obj
+
+jbig.lib: libjbig\*.obj
+	lib /out:$@ libjbig\jbig.obj libjbig\jbig_ar.obj
+jbig85.lib: libjbig\*.obj
+	lib /out:$@ libjbig\jbig85.obj libjbig\jbig_ar.obj
+
+
+!IFDEF STATIC
+LIBS		=	jbig.lib
+LIB85S		=	jbig85.lib
+!ELSE
+LIBS		=	libjbig.lib
+LIB85S		=	libjbig85.lib
+!ENDIF
+
+
+tstcodec.exe: libjbig\*.obj $(LIBS)
+	link /out:libjbig\$@ libjbig\tstcodec.obj $(LIBS)
+	COPY /Y libjbig.dll libjbig\.
+tstcodec85.exe: libjbig\*.obj $(LIB85S)
+	link /out:libjbig\$@ libjbig\tstcodec85.obj $(LIB85S)
+	COPY /Y libjbig85.dll libjbig\.
+
+jbgtopbm.exe: pbmtools\*.obj $(LIBS)
+	link /out:$@ pbmtools\jbgtopbm.obj $(LIBS)
+jbgtopbm85.exe: pbmtools\*.obj $(LIB85S)
+	link /out:$@ pbmtools\jbgtopbm85.obj $(LIB85S)
+pbmtojbg.exe: pbmtools\*.obj $(LIBS)
+	link /out:$@ pbmtools\pbmtojbg.obj $(LIBS)
+pbmtojbg85.exe: pbmtools\*.obj $(LIB85S)
+	link /out:$@ pbmtools\pbmtojbg85.obj $(LIB85S)
+
+all: libjbig.dll libjbig85.dll jbig.lib jbig85.lib tstcodec.exe tstcodec85.exe jbgtopbm.exe jbgtopbm85.exe pbmtojbg.exe pbmtojbg85.exe
+
+clean:
+	-DEL *.dll *.lib *.exe *.exp
+	-DEL libjbig\*.obj libjbig\*.exe libjbig\*.dll
+	-DEL pbmtools\*.obj

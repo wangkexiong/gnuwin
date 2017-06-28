@@ -1,0 +1,16 @@
+; /usr/bin/dlltool --export-all-symbols -z libjbig85.def libjbig\jbig85.obj libjbig\jbig_ar.obj
+EXPORTS
+	arith_decode_init
+	arith_decode
+	arith_encode_init
+	arith_encode
+	arith_encode_flush
+	jbg85_dec_end
+	jbg85_dec_in
+	jbg85_dec_init
+	jbg85_enc_abort
+	jbg85_enc_init
+	jbg85_enc_lineout
+	jbg85_enc_newlen
+	jbg85_enc_options
+	jbg85_strerror
