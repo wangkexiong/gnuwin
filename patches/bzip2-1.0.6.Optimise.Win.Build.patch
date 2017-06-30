@@ -1,0 +1,46 @@
+diff --git a/makefile.msc b/makefile.msc
+index 6a628a7..3ef3349 100644
+--- a/makefile.msc
++++ b/makefile.msc
+@@ -14,15 +14,27 @@ OBJS= blocksort.obj  \
+       decompress.obj \
+       bzlib.obj
+ 
+-all: lib bzip2 test
++all: libbz2.lib libbz2.dll bzip2 test
+ 
+-bzip2: lib
+-	$(CC) $(CFLAGS) -o bzip2 bzip2.c libbz2.lib setargv.obj
++!IFDEF STATIC
++LIBS = libbz2.lib
++!ELSE
++LIBS = libbz2_i.lib
++!ENDIF
++
++bzip2: libbz2.lib libbz2.dll
++	$(CC) $(CFLAGS) -o bzip2 bzip2.c setargv.obj $(LIBS)
+ 	$(CC) $(CFLAGS) -o bzip2recover bzip2recover.c
++	IF EXIST bzip2.exe.manifest mt -manifest bzip2.exe.manifest -outputresource:bzip2.exe;1
++	IF EXIST bzip2recover.exe.manifest mt -manifest bzip2recover.exe.manifest -outputresource:bzip2recover.exe;1
+ 
+-lib: $(OBJS)
++libbz2.lib: $(OBJS)
+ 	lib /out:libbz2.lib $(OBJS)
+ 
++libbz2.dll: $(OBJS)
++	link /dll /def:libbz2.def /out:$@ /implib:libbz2_i.lib $(OBJS)
++	IF EXIST $@.manifest mt -manifest $@.manifest -outputresource:$@;1
++
+ test: bzip2
+ 	type words1
+ 	.\\bzip2 -1  < sample1.ref > sample1.rb2
+@@ -48,7 +60,8 @@ test: bzip2
+ 
+ clean: 
+ 	del *.obj
+-	del libbz2.lib 
++	del *.lib *.dll *.exp
++	del *.manifest
+ 	del bzip2.exe
+ 	del bzip2recover.exe
+ 	del sample1.rb2 

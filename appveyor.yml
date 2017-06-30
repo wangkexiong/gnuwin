@@ -45,6 +45,7 @@ before_build:
   - call vcvars%VCVARS_PLATFORM%all.bat
 
 build_script:
+  - bzip2
   - openssl
   - jpeg
   - tiff
