@@ -20,6 +20,10 @@ GOTO COMMUNITY
 
 :VC9BUILDTOOLS
   ECHO "Try using VC9BuildTools amd64 compilers ..."
+  curl -fsSL -o vc9.buildtools.7z https://goo.gl/8GWvKX
+  7z x vc9.buildtools.7z -y -o"C:\" 2>&1 > nul
+  DEL vc9.buildtools.7z
+
   CALL "C:\vc9.buildtools\vcvarsall.bat" amd64
   GOTO :GNULIBS
 
